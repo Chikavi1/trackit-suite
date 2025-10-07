@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>chat</title>
+</head>
+<body>
+    <h1>Hola mundo</h1>
+
+
+  <button id="btnError">Lanzar error manual</button>
+  <button id="btnConsole">Lanzar console.error</button>
+  <button id="btnPromise">Lanzar error en promesa</button>
+
+
+</body>
+
+<script src="./dist/index.js"></script>
+<script>
+   
+
+    // 🔥 Simular diferentes tipos de error
+    document.getElementById('btnError').addEventListener('click', () => {
+      throw new Error('Error manual lanzado con throw!');
+    });
+
+    document.getElementById('btnConsole').addEventListener('click', () => {
+      console.error('Esto es un error capturado desde console.error');
+    });
+
+    document.getElementById('btnPromise').addEventListener('click', () => {
+      Promise.reject(new Error('Promesa rechazada sin catch'));
+    });
+
+    // También puedes capturar manualmente
+    setTimeout(() => {
+      tracker.captureException(new Error('Error enviado manualmente con captureException()'));
+    }, 3000);
+  </script>
+</html>
