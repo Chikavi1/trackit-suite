@@ -1,13 +1,11 @@
-
-
 interface NpsConfig {
-  projectId: string;        // ID único de cliente o proyecto
-  endpoint: string;         // Tu API donde se envían los resultados
-  question?: string;        // Texto de la pregunta
-  themeColor?: string;      // Color principal del widget
-  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-  autoShow?: boolean;       // Si se muestra automáticamente
-  delay?: number;           // Retraso en milisegundos para autoShow
+  projectId: string;
+  endpoint: string;
+  question?: string;
+  themeColor?: string;
+  position?: 'bottom-right' | 'bottom-left' | 'bottom-center' | 'top-right' | 'top-left';
+  autoShow?: boolean;
+  delay?: number;
 }
 
 export class initNps {
@@ -34,33 +32,19 @@ export class initNps {
     }
   }
 
-  /** 🧱 Renderiza el widget en la página */
   private renderWidget() {
     if (document.getElementById('nps-widget')) return;
-
     this.container = document.createElement('div');
     this.container.id = 'nps-widget';
-    this.container.innerHTML = this.getTemplate();
+    this.container.innerHTML = this.getStep1Template();
     this.applyStyles();
-
     document.body.appendChild(this.container);
 
-    // Listeners para puntajes
-    const buttons = this.container.querySelectorAll('.nps-btn');
-    buttons.forEach(btn => {
-      btn.addEventListener('click', e => {
-        const score = parseInt((e.target as HTMLElement).dataset.score!);
-        this.submit(score);
-      });
-    });
-
-    // Cerrar
-    const close = this.container.querySelector('.nps-close');
-    close?.addEventListener('click', () => this.close());
+    this.attachStep1Listeners();
   }
 
-  /** 🎨 HTML base del widget */
-  private getTemplate(): string {
+  /** Paso 1: Calificación rápida */
+  private getStep1Template(): string {
     return `
       <div class="nps-card">
         <button class="nps-close">×</button>
@@ -73,9 +57,74 @@ export class initNps {
     `;
   }
 
-  /** 🧠 Aplica estilos directamente (sin CSS externo) */
+  private attachStep1Listeners() {
+    const buttons = this.container.querySelectorAll('.nps-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', e => {
+        const score = parseInt((e.target as HTMLElement).dataset.score!);
+        this.renderStep2(score);
+      });
+    });
+
+    const close = this.container.querySelector('.nps-close');
+    close?.addEventListener('click', () => this.close());
+  }
+
+  /** Paso 2: Seguimiento según score */
+  private renderStep2(score: number) {
+    let title = '';
+    let placeholder = '';
+    let askContact = false;
+
+    if (score <= 6) {
+      title = 'Lamentamos no haber cumplido tus expectativas. 😞<br>¿Podrías contarnos qué podríamos mejorar?';
+      placeholder = 'Tu sugerencia...';
+      askContact = true;
+    } else if (score <= 8) {
+      title = 'Gracias por tu opinión. 🙏<br>¿Qué mejorarías para que tu experiencia fuera excelente?';
+      placeholder = 'Tu comentario...';
+      askContact = true;
+    } else {
+      title = '¡Nos alegra mucho que nos recomiendes! ❤️<br>¿Podrías dejarnos tu correo para enviarte beneficios exclusivos o programas de referidos?';
+      placeholder = 'Tu mensaje...';
+      askContact = true;
+    }
+
+    this.container.innerHTML = `
+      <div class="nps-card">
+        <button class="nps-close">×</button>
+        <h3 class="nps-question">${title}</h3>
+
+         ${askContact ? `
+          <input type="email" autocomplete="true" class="nps-input" placeholder="Tu correo (opcional)" />
+        ` : ''}
+
+       <textarea rows="2" class="nps-text" placeholder="${placeholder}" style="resize:none;"></textarea>
+
+       
+
+        <button class="nps-submit">Enviar</button>
+      </div>
+    `;
+
+    this.applyStyles();
+    const submit = this.container.querySelector('.nps-submit');
+    const close = this.container.querySelector('.nps-close');
+
+    submit?.addEventListener('click', () => {
+      const text = (this.container.querySelector('.nps-text') as HTMLTextAreaElement)?.value || '';
+      const name = (this.container.querySelector('.nps-input[type="text"]') as HTMLInputElement)?.value || '';
+      const email = (this.container.querySelector('.nps-input[type="email"]') as HTMLInputElement)?.value || '';
+      this.submit(score, text, name, email);
+    });
+
+    close?.addEventListener('click', () => this.close());
+  }
+
+  /** Estilos */
   private applyStyles() {
-    const style = document.createElement('style');
+    const style = document.getElementById('nps-style') || document.createElement('style');
+    style.id = 'nps-style';
     style.textContent = `
       #nps-widget {
         position: fixed;
@@ -83,18 +132,16 @@ export class initNps {
         z-index: 9999;
         font-family: system-ui, sans-serif;
       }
-
       .nps-card {
         background: white;
         border: 1px solid #e5e7eb;
         border-radius: 12px;
         padding: 16px;
-        width: 280px;
+        width: 300px;
         box-shadow: 0 5px 20px rgba(0,0,0,0.15);
         position: relative;
         animation: fadeIn 0.3s ease-out;
       }
-
       .nps-close {
         position: absolute;
         top: 6px;
@@ -104,20 +151,18 @@ export class initNps {
         font-size: 18px;
         cursor: pointer;
       }
-
       .nps-question {
         font-weight: 600;
         margin-bottom: 12px;
-        color: #111827;
+        color: #616366ff;
+        font-size: 15px;
       }
-
       .nps-options {
         display: flex;
         justify-content: space-between;
         flex-wrap: wrap;
         gap: 4px;
       }
-
       .nps-btn {
         flex: 1;
         min-width: 25px;
@@ -128,20 +173,35 @@ export class initNps {
         cursor: pointer;
         transition: all 0.2s;
       }
-
       .nps-btn:hover {
         background: ${this.config.themeColor};
         color: white;
         border-color: ${this.config.themeColor};
       }
-
       .nps-footer {
         font-size: 12px;
         color: #6b7280;
         margin-top: 10px;
         text-align: center;
       }
-
+      .nps-text, .nps-input {
+        width: 100%;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        padding: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+      .nps-submit {
+        background: ${this.config.themeColor};
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 0;
+        width: 100%;
+        cursor: pointer;
+        font-weight: 600;
+      }
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
@@ -150,32 +210,33 @@ export class initNps {
     document.head.appendChild(style);
   }
 
-  /** 📍 Posición del widget */
   private getPosition() {
     switch (this.config.position) {
-      case 'bottom-left':
-        return 'bottom: 20px; left: 20px;';
-      case 'top-right':
-        return 'top: 20px; right: 20px;';
-      case 'top-left':
-        return 'top: 20px; left: 20px;';
-      default:
-        return 'bottom: 20px; right: 20px;';
+      case 'bottom-left': return 'bottom: 20px; left: 20px;';
+      case 'bottom-center': return 'bottom: 20px; left: 50%; transform: translateX(-50%);';
+      case 'top-right': return 'top: 20px; right: 20px;';
+      case 'top-left': return 'top: 20px; left: 20px;';
+      default: return 'bottom: 20px; right: 20px;';
     }
   }
 
-  /** 📬 Enviar respuesta al servidor */
-  private async submit(score: number) {
+  /** Enviar respuesta */
+  private async submit(score: number, feedback: string, name?: string, email?: string) {
     if (this.hasVoted) return;
     this.hasVoted = true;
 
     try {
-      await fetch(this.config.endpoint, {
+      await fetch('https://trackit-suite-back.onrender.com/nps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           projectId: this.config.projectId,
           score,
+          feedback,
+          name,
+          email,
+          sessionId: this.getSessionId(),
+          userId: this.getUserId(),
           url: window.location.href,
           userAgent: navigator.userAgent,
           timestamp: new Date().toISOString()
@@ -183,19 +244,29 @@ export class initNps {
       });
 
       this.container.innerHTML = `<div class="nps-card"><p>¡Gracias por tu opinión! 🙌</p></div>`;
-      setTimeout(() => this.close(), 2000);
+      setTimeout(() => this.close(), 2500);
     } catch (err) {
       console.error('Error enviando NPS:', err);
     }
   }
 
-  /** ❌ Cerrar el widget */
+  private getSessionId() {
+    return sessionStorage.getItem('sessionId') || crypto.randomUUID();
+  }
+
+  private getUserId() {
+    return localStorage.getItem('userId') || null;
+  }
+
   private close() {
     this.container.remove();
   }
 
-  /** 💡 Permite mostrarlo manualmente */
-  public show() {
+  public open() {
     this.renderWidget();
+  }
+
+  public addUser(user: string){
+    console.log('se agrega usuario');
   }
 }

@@ -1,10 +1,13 @@
 import { EventType as RRWebEvent } from 'rrweb';
 
 export interface TrackerConfig {
-  userId?: string;
+  projectId?: string;
   endpoint?: string;
+  environment?: string;
+  release?: string;
+  userId?: string;
   enableRRWeb?: boolean;
-  excludePaths?: string[];
+  excludePaths?: (string | RegExp)[];
 }
 
 export interface EventData {

@@ -1,0 +1,28 @@
+<div id="nps-chatbot" class="fixed bottom-6 right-6 font-sans z-[9999]">
+  <!-- Toggle button -->
+  <div class="chat-toggle w-14 h-14 rounded-full bg-blue-600 text-white text-2xl flex items-center justify-center cursor-pointer shadow-lg transition-colors hover:bg-blue-800">
+    💬
+  </div>
+
+  <!-- Chat window -->
+  <div class="chat-window hidden flex-col absolute bottom-16 right-0 w-80 max-h-[450px] h-[500px] bg-white rounded-xl shadow-xl overflow-hidden text-sm">
+    
+    <!-- Header -->
+    <div class="chat-header bg-blue-600 text-white p-2.5 flex items-center gap-2">
+      <img id="bot-avatar" class="w-7 h-7 rounded-full hidden" />
+      <span id="bot-name">Chatbot</span>
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-messages flex-1 p-3 overflow-y-auto h-[20rem]"></div>
+
+    <!-- Input -->
+    <div class="chat-input flex border-t border-gray-200">
+      <input id="chat-input" type="text" placeholder="Escribe un mensaje..." class="flex-1 p-2.5 outline-none border-none" />
+      <button class="bg-blue-600 text-white px-4 hover:bg-blue-800 border-none cursor-pointer">➤</button>
+    </div>
+
+    <!-- Footer -->
+    <div id="chat-footer" class="chat-footer"></div>
+  </div>
+</div>

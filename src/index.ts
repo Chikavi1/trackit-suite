@@ -1,51 +1,88 @@
-// src/index.ts
-
+// ===============================================
+// 📦 IMPORTS PRINCIPALES
+// ===============================================
 import { initChatbot } from "./initChatbots.js";
-import { initNps } from "./initNPS.js";
 import { initErrors } from "./initErrros.js";
+import { initNps } from "./initNPS.js";
+import { TrackerManager } from "./TrackerManager";
+import { SystemTracker } from "./SystemTracker";
+import { RRWebTracker } from "./RRWebTracker.js";
 
-// export { TrackerManager } from './TrackerManager';
-// export { RRWebTracker } from './RRWebTracker';
-// export { SystemTracker } from './SystemTracker';
-// export type { TrackerConfig, Events } from './interfaces';
+// ===============================================
+// 📤 EXPORTS (para uso modular o global)
+// ===============================================
+export { SystemTracker, initChatbot, initErrors, initNps, TrackerManager };
 
-// import { Tests } from './test';
-// new Tests();
+// ===============================================
+// ⚙️ CONFIG GLOBAL
+// ===============================================
+const DEFAULT_ENDPOINT = "https://trackit-suite-back.onrender.com";
 
-const tracker = new initErrors({
-    projectId: 'demo-123',
-    endpoint: 'https://jsonplaceholder.typicode.com/posts', // endpoint falso para pruebas
-    environment: 'dev',
-    release: 'v1.0.0'
-  });
+// ===============================================
+// 🧩 CLASE PRINCIPAL DEL SDK
+// ===============================================
+export class TrackItSuite {
+  private projectId: string;
+  private publicToken: string;
+  private endpoint: string = DEFAULT_ENDPOINT;
 
-const nps = new initNps({
-    projectId: 'demo-123',
-    endpoint: 'https://jsonplaceholder.typicode.com/posts', // fake API para probar
-    themeColor: '#16a34a',
-    position: 'bottom-left',
-    autoShow: true,
-    delay: 1000
-  });
+  public nps: any;
+  public chatbot: any;
+  public errors: any;
+  public tracker: any;
 
- 
-const bot = new initChatbot({
-  projectId: 'demo123',
-  welcomeMessage: '¡Hola! Soy tu asistente virtual 😊',
-  themeColor: '#17202F',
-  position: 'bottom-right',
-  botName: 'Sofia Reyes',
-  poweredBy: 'Radi Pets',
-  autoOpen: false
-});
+  constructor({ projectId, publicToken }: { projectId: string; publicToken: string }) {
+    if (!projectId || !publicToken) {
+      throw new Error("❌ TrackItSuite requiere projectId y publicToken");
+    }
 
+    this.projectId = projectId;
+    this.publicToken = publicToken;
 
-// export { VariantsManager } from './Variants';
+    this.initializeModules();
+  }
 
-// export { FherNotification, NotificationType } from "./Notifications";
+  private initializeModules() {
+    // 🟢 NPS
+    this.nps = new initNps({
+      projectId: this.projectId,
+      endpoint: `${this.endpoint}/nps`,
+      position: "bottom-center",
+      autoShow: true,
+      delay: 1000,
+    });
 
- 
+    // 💬 Chatbot
+    this.chatbot = new initChatbot({
+      projectId: this.projectId,
+      themeColor: "#17202F",
+      position: "bottom-right",
+      botName: "Sofía Reyes",
+      poweredBy: "Radi Pets",
+      welcomeMessage: "¡Hola! Soy tu asistente virtual 😊",
+      autoOpen: false,
+    });
 
-// usar 
-// npm link
-// npm run build -- -- watch
+    // 🔴 Error Tracker
+    this.errors = new initErrors({
+      projectId: this.projectId,
+      endpoint: `${this.endpoint}/errors`,
+      environment: "prod",
+      release: "v1.0.0",
+    });
+
+    // Inicializa el chatbot automáticamente
+    this.chatbot.init();
+  }
+}
+
+// ===============================================
+// 🌍 Exponer globalmente para el navegador
+// ===============================================
+if (typeof window !== "undefined") {
+  (window as any).TrackItSuite = TrackItSuite;
+  (window as any).TrackerManager = TrackerManager; 
+  (window as any).initNps = initNps;
+
+  // ✅ Ahora sí puedes usar TrackerManager
+}

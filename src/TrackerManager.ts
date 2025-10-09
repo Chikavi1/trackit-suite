@@ -1,10 +1,9 @@
-// src/TrackerManager.ts
 import { TrackerConfig, Events } from './interfaces';
 import { RRWebTracker } from './RRWebTracker';
 import { SystemTracker } from './SystemTracker';
 
 export class TrackerManager {
-  public events: Events;
+  public events!: Events;
   private systemTracker: SystemTracker | null = null;
   private rrwebTracker: RRWebTracker | null = null;
   private userId: string;
@@ -14,13 +13,15 @@ export class TrackerManager {
     this.userId = config.userId || 'anonymous';
     this.excludePaths = config.excludePaths || [];
 
-    // Verificar si la ruta actual está excluida
     const currentPath = window.location.pathname;
-   if (this.isExcluded(currentPath)) {
-    console.warn(`Tracking deshabilitado para la ruta: ${currentPath}`);
-    return;
-  }
+    if (this.isExcluded(currentPath)) {
+      console.warn(`Tracking deshabilitado para la ruta: ${currentPath}`);
+      return;
+    }
 
+    // ===============================================
+    // Inicializa estructura de eventos
+    // ===============================================
     this.events = {
       leadId: 'lead_' + Date.now(),
       userInfo: {
@@ -42,30 +43,37 @@ export class TrackerManager {
       createdAt: new Date().toISOString(),
     };
 
-    console.log("INIT");
+    // ===============================================
+    // Inicializa RRWebTracker primero
+    // ===============================================
+    this.rrwebTracker = new RRWebTracker({
+      events: this.events,
+      onEvent: (event) => console.log('Evento grabado RRWeb:', event),
+    });
+    this.startRecording();
 
+    // ===============================================
+    // Inicializa SystemTracker
+    // ===============================================
     this.systemTracker = new SystemTracker(this.events);
     this.startSession();
 
-    if (config.enableRRWeb) {
-      this.rrwebTracker = new RRWebTracker(this.events);
-      this.startRecording();
-    }
-
+    // ===============================================
+    // Captura evento de cierre de página
+    // ===============================================
     this.systemTracker.handleBeforeUnload(this.userId, this.events.session.rrwebEvents);
   }
 
   private isExcluded(path: string): boolean {
-  return this.excludePaths.some((pattern) => {
-    if (pattern instanceof RegExp) return pattern.test(path);
-    if (pattern.includes(':')) {
-      const regex = new RegExp('^' + pattern.replace(/:[^/]+/g, '[^/]+') + '$');
-      return regex.test(path);
-    }
-    return path === pattern;
-  });
-}
-
+    return this.excludePaths.some((pattern) => {
+      if (pattern instanceof RegExp) return pattern.test(path);
+      if (pattern.includes(':')) {
+        const regex = new RegExp('^' + pattern.replace(/:[^/]+/g, '[^/]+') + '$');
+        return regex.test(path);
+      }
+      return path === pattern;
+    });
+  }
 
   startSession() {
     this.systemTracker?.initListeners();

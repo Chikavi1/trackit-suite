@@ -8,7 +8,7 @@ export class SystemTracker {
   private lastEvent: string | null = null;
   private pageUrl = window.location.pathname;
 
-  private endpoint = 'http://localhost:3000/sessions';
+  private endpoint = 'https://trackit-suite-back.onrender.com/sessions';
 
   constructor(events: Events) {
     this.events = events;
@@ -104,17 +104,23 @@ export class SystemTracker {
 
     console.log("payload: ",payload)
 
-    if (navigator.sendBeacon) {
-      const blob = new Blob([payload], { type: 'application/json' });
-      navigator.sendBeacon(this.endpoint, blob);
-    } else {
-      await fetch(this.endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: payload,
-        keepalive: true,
-      }).catch(console.error);
-    }
+     await fetch(this.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true,
+        }).catch(console.error);
+    
+      // if (navigator.sendBeacon) {
+      //   const blob = new Blob([payload], { type: 'application/json' });
+      //   alert('se envia por sendbeacon')
+      //   navigator.sendBeacon(this.endpoint, blob);
+      // } else {
+      //           alert('se envia por fetch')
+
+       
+      // }
+
   }
 
   handleBeforeUnload(userId?: string, rrwebEvents: any[] = []) {
