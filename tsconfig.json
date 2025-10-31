@@ -5,7 +5,9 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "declaration": true,
+    "declarationMap": true,       // opcional, útil para debugging
     "outDir": "./dist",
+    "rootDir": "./src",
     "strict": true
   },
   "include": ["src"]

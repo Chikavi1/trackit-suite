@@ -1,28 +1,101 @@
 <div id="nps-chatbot" class="fixed bottom-6 right-6 font-sans z-[9999]">
-  <!-- Toggle button -->
-  <div class="chat-toggle w-14 h-14 rounded-full bg-blue-600 text-white text-2xl flex items-center justify-center cursor-pointer shadow-lg transition-colors hover:bg-blue-800">
-    💬
+  <!-- Botón flotante -->
+  <div
+    class="chat-toggle w-14 h-14 rounded-full bg-blue-600 text-white text-2xl flex items-center justify-center cursor-pointer shadow-lg transition-all duration-300 hover:bg-blue-700 hover:scale-110"
+>
+    <img style="width: 1em;height: 1em;filter: invert(1); " src="./public/assets/icons/message.svg" alt="">
   </div>
 
-  <!-- Chat window -->
-  <div class="chat-window hidden flex-col absolute bottom-16 right-0 w-80 max-h-[450px] h-[500px] bg-white rounded-xl shadow-xl overflow-hidden text-sm">
-    
-    <!-- Header -->
-    <div class="chat-header bg-blue-600 text-white p-2.5 flex items-center gap-2">
-      <img id="bot-avatar" class="w-7 h-7 rounded-full hidden" />
-      <span id="bot-name">Chatbot</span>
+  <!-- Ventana del chat -->
+  <div
+    class="chat-window hidden flex-col absolute bottom-16 right-0 w-80 max-h-[500px] h-[480px] bg-white rounded-2xl shadow-2xl overflow-hidden text-sm border border-gray-100 animate__animated"
+    style="animation-duration: 0.3s;"
+  >
+    <!-- Encabezado -->
+    <div class="chat-header bg-blue-600 text-white p-3 flex items-center gap-3">
+      <img id="bot-avatar" class="w-8 h-8 rounded-full hidden border border-white/30" />
+      <div class="flex flex-col">
+        <span id="bot-name" class="font-semibold text-base"></span>
+        <span class="text-xs text-blue-100">En línea</span>
+      </div>
     </div>
 
-    <!-- Messages -->
-    <div class="chat-messages flex-1 p-3 overflow-y-auto h-[20rem]"></div>
+    <!-- Área de mensajes -->
+    <div
+      class="chat-messages flex-1 p-3 overflow-y-auto h-[20rem] space-y-2 bg-gray-50"
+    >
+      <!-- Ejemplo de mensaje inicial (opcional) -->
+      <!-- <div class="chat-message bot bg-blue-100 text-blue-900 px-3 py-2 rounded-xl inline-block max-w-[75%]">¡Hola! 👋</div> -->
+    </div>
 
-    <!-- Input -->
-    <div class="chat-input flex border-t border-gray-200">
-      <input id="chat-input" type="text" placeholder="Escribe un mensaje..." class="flex-1 p-2.5 outline-none border-none" />
-      <button class="bg-blue-600 text-white px-4 hover:bg-blue-800 border-none cursor-pointer">➤</button>
+    <!-- Entrada de texto -->
+    <div class="chat-input flex items-center border-t border-gray-200 bg-white">
+      <input
+        id="chat-input"
+        type="text"
+        placeholder="Escribe un mensaje..."
+        class="flex-1 px-3 py-2 text-gray-700 outline-none"
+      />
+      <button
+        class="bg-blue-600 text-white px-4 py-2 font-semibold hover:bg-blue-700 transition-all border-none cursor-pointer"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" class="w-4 h-4 fill-white"> 
+          <path d="M536.4-26.3c9.8-3.5 20.6-1 28 6.3s9.8 18.2 6.3 28l-178 496.9c-5 13.9-18.1 23.1-32.8 23.1-14.2 0-27-8.6-32.3-21.7l-64.2-158c-4.5-11-2.5-23.6 5.2-32.6l94.5-112.4c5.1-6.1 4.7-15-.9-20.6s-14.6-6-20.6-.9L229.2 276.1c-9.1 7.6-21.6 9.6-32.6 5.2L38.1 216.8c-13.1-5.3-21.7-18.1-21.7-32.3 0-14.7 9.2-27.8 23.1-32.8l496.9-178z"/>
+        </svg>
+      </button>
     </div>
 
     <!-- Footer -->
-    <div id="chat-footer" class="chat-footer"></div>
+    <div
+      id="chat-footer"
+      class="chat-footer text-center text-gray-400 text-xs py-2 bg-gray-50"
+    >
+      Powered by
+      <a
+        href="https://www.pulsetrack.me/"
+        class="text-blue-500 font-semibold hover:underline"
+        target="_blank"
+        >PulseTrack</a
+      >
+    </div>
   </div>
 </div>
+
+<!-- Estilos opcionales para animaciones suaves -->
+<style>
+  .chat-message.bot {
+    background: #e8f0fe;
+    color: #1a56db;
+    align-self: flex-start;
+  }
+  .chat-message.user {
+    background: #2563eb;
+    color: white;
+    align-self: flex-end;
+  }
+  .chat-message {
+    padding: 8px 12px;
+    border-radius: 14px;
+    max-width: 75%;
+    display: inline-block;
+    word-wrap: break-word;
+  }
+  .chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .animate__animated {
+    animation-name: fadeInUp;
+  }
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

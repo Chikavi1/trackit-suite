@@ -4,19 +4,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Demo TrackIt Suite</title>
+  <title>Demo PulseTrack</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-8">
   <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg text-center">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">🚀 TrackIt Suite SDK Demo</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">🚀 PulseTrack SDK Demo</h1>
     <p class="text-gray-600 mb-8">Usa los botones para probar las funciones principales</p>
 
     <div class="flex flex-col gap-3">
      <h2>RRWeb Recording</h2>
       <button id="openNPS" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition">▶️ Abrir NPS</button>
     
+      <h1 id="changetext" data-editor-id="changetext">texto a cambiar</h1>
 
       <h2>RRWeb Recording</h2>
       <button id="btnStartRecording" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition">▶️ Iniciar grabación</button>
@@ -28,59 +29,114 @@
       <button id="btnError" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg transition">🔥 Lanzar error manual</button>
       <button id="btnConsole" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded-lg transition">⚠️ Lanzar console.error</button>
       <button id="btnPromise" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition">🌀 Lanzar error en promesa</button>
+
+      <h2>Testing</h2>
+      <button id="btnChange">Cambiar contenido</button>
     </div>
+
+    
 
     <p class="text-sm text-gray-400 mt-6">Abre la consola del navegador para ver los logs.</p>
   </div>
 
   <!-- Importa el bundle UMD -->
-  <script src="./dist/chikavi-tracking.umd.js"></script>
-  <script>
-    // 🔹 Instancia del SDK
-    const sdk = new TrackItSuite({
-      projectId: "demo-123",
-      publicToken: "demo-token"
+  
+<script type="module">
+  import { NPS  } from './dist/nps.js';
+
+  const myNps = new NPS({
+    projectId: "mi-proyecto-123",
+    question: "¿Qué tan probable es que nos recomiendes?",
+    themeColor: "#f59e0b",
+    position: "bottom-center",
+    autoShow: true,
+    delay: 1000
+  });
+
+  document.getElementById("openNPS").onclick = () => myNps.open();
+</script>
+
+<script type="module">
+  import { VariantsManager } from './dist/Variants.js';
+
+  const manager = new VariantsManager();
+  manager.init(); // ⚡️ asigna IDs automáticamente
+  manager.applyVariation('changetext', {
+      html: '<span style="color: red">¡Hola mundo!</span>'
+    });
+</script>
+
+<!-- <script type="module">
+  import { chat as initChatbot } from './dist/chat.js';
+
+  const chat = new initChatbot({
+    projectId: 'demo-001',
+    themeColor: '#f59e0b',
+    avatarUrl: 'https://cdn-icons-png.flaticon.com/512/4712/4712100.png',
+    userAvatarUrl: 'https://cdn-icons-png.flaticon.com/512/4140/4140048.png',
+    botName: 'ChikaviBot',
+    placeholder: 'Escribe un mensaje...',
+    position: 'bottom-left',
+    poweredBy: 'PulseTrack',
+    autoOpen: true,
+  });
+
+  chat.init();
+
+  </script> -->
+
+
+
+  <script type="module">
+
+    import { survey as initSurvey } from './dist/surveys.js';
+
+
+    const survey = new initSurvey({
+      projectId: 'demo-001',
+      question: '¿Qué tan probable es que nos recomiendes?',
+      options: ['1','2','3','4','5'],
+      themeColor: '#f59e0b',
+      position: 'right',
+      autoShow: false,
+      buttonText: 'Feedback'
     });
 
-    // 🔹 TrackerManager
-    const tracker = new TrackerManager({
-      userId: "test-user",
-      onEvent: (e) => console.log("Evento grabado:", e)
-    });
+    survey.init();
 
-    window.tracker = tracker; // debug
-
-    // === Botones de prueba ===
-    document.getElementById("btnStartRecording").onclick = () => {
-      tracker.startRecording();
-      console.log('✅ Grabación iniciada');
-    };
-
-    document.getElementById("btnPauseRecording").onclick = () => {
-      tracker.rrwebTracker?.stop();
-      console.log('⏸️ Grabación pausada');
-    };
-
-    document.getElementById("btnStopRecording").onclick = async () => {
-      await tracker.stopRecording(); // envía datos al backend
-      console.log('⏹️ Grabación detenida y sesión enviada');
-      tracker.rrwebTracker?.clear(); // limpia eventos
-    };
-
-    document.getElementById("btnShowEvents").onclick = () => {
-      console.log('📦 Eventos acumulados:', tracker.getSessionJSON());
-    };
-    
-
-    // Errores
-    document.getElementById("btnError").onclick = () => { throw new Error("Error manual lanzado con throw!"); };
-    document.getElementById("btnConsole").onclick = () => { console.error("Esto es un error capturado desde console.error"); };
-    document.getElementById("btnPromise").onclick = () => { Promise.reject(new Error("Promesa rechazada sin catch")); };
-
-    // Enviar sesión automáticamente al cerrar pestaña
-    window.addEventListener("beforeunload", async () => {
-      await tracker.stopRecording();
-    });
   </script>
+
+
+  <script type="module">
+    import { Announcement } from './dist/announcement.js';
+
+    const ann = new Announcement({
+      projectId: '12345',
+      message: 'Este es un anuncio importante para todos los usuarios!',
+      linkUrl: 'https://www.google.com',
+      themeColor: '#17202F',
+      autoShow: true,
+     // duration: 5000, // 5 segundos
+      dismissible: true
+    });
+
+          // type: 'warning',
+
+
+    ann.init();
+  </script>
+
+<!-- <script type="module">
+    import { Session } from './dist/session.js';
+    console.log('Iniciando TrackerManager...');
+
+    const tracker = new Session({
+      userId: 'usuario-de-prueba-001'
+    });
+
+    console.log('TrackerManager inicializado:', tracker);
+    window.myTracker = tracker;
+  </script> -->
+
 </body>
 </html>

@@ -30,10 +30,11 @@
 // src/RRWebTracker.ts
 // src/RRWebTracker.ts
 // src/RRWebTracker.ts
-import * as rrweb from 'rrweb';
+
+import { record,EventType } from 'rrweb';
 import { Events } from './interfaces';
 
-export type RRWebEvent = rrweb.EventType;
+export type RRWebEvent = EventType;
 
 export interface RRWebTrackerOptions {
   events?: Events;                   
@@ -50,7 +51,7 @@ export class RRWebTracker {
   start() {
     if (this.recording) return;
 
-    this.stopFn = rrweb.record({
+    this.stopFn = record({
       emit: (event: RRWebEvent) => {
         this.eventsArray.push(event);
 

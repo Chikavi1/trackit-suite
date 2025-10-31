@@ -1,6 +1,5 @@
 interface NpsConfig {
   projectId: string;
-  endpoint: string;
   question?: string;
   themeColor?: string;
   position?: 'bottom-right' | 'bottom-left' | 'bottom-center' | 'top-right' | 'top-left';
@@ -18,13 +17,13 @@ export class initNps {
       question: config.question || '¿Qué tan probable es que recomiendes este servicio?',
       themeColor: config.themeColor || '#2563eb',
       position: config.position || 'bottom-right',
-      autoShow: config.autoShow ?? true,
+      autoShow: config.autoShow ?? false,
       delay: config.delay ?? 2000,
       ...config
     };
 
-    if (!this.config.projectId || !this.config.endpoint) {
-      throw new Error('initNps: projectId y endpoint son requeridos');
+    if (!this.config.projectId) {
+      throw new Error('initNps: <projectId son requeridos');
     }
 
     if (this.config.autoShow) {
@@ -53,6 +52,7 @@ export class initNps {
           ${Array.from({ length: 10 }, (_, i) => `<button class="nps-btn" data-score="${i + 1}">${i + 1}</button>`).join('')}
         </div>
         <p class="nps-footer">1 = Nada probable, 10 = Muy probable</p>
+         <p class="nps-footer">Powered by <a href="https://www.pulsetrack.me/" style="font-weight:bold;" target="_blank">PulseTrack</a></p>
       </div>
     `;
   }
@@ -184,6 +184,12 @@ export class initNps {
         margin-top: 10px;
         text-align: center;
       }
+      .powered{
+        font-size: 5px;
+        color: #6b7280;
+        margin-top: 2px;
+        text-align: center;
+      }
       .nps-text, .nps-input {
         width: 100%;
         border: 1px solid #d1d5db;
@@ -230,15 +236,15 @@ export class initNps {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          projectId: this.config.projectId,
+          business_id: this.config.projectId,
           score,
           feedback,
           name,
           email,
-          sessionId: this.getSessionId(),
-          userId: this.getUserId(),
+          session_id: this.getSessionId(),
+          user_id: this.getUserId(),
           url: window.location.href,
-          userAgent: navigator.userAgent,
+          user_agent: navigator.userAgent,
           timestamp: new Date().toISOString()
         })
       });

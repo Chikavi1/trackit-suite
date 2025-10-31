@@ -7,8 +7,9 @@ export class SystemTracker {
   private maxScroll = 0;
   private lastEvent: string | null = null;
   private pageUrl = window.location.pathname;
-
-  private endpoint = 'https://trackit-suite-back.onrender.com/sessions';
+ 
+  private endpoint = 'http://localhost:3000/sessions';
+  // private endpoint = 'https://trackit-suite-back.onrender.com/sessions';
 
   constructor(events: Events) {
     this.events = events;
@@ -82,46 +83,70 @@ export class SystemTracker {
     });
   }
 
-  async endSession(userId?: string, rrwebEvents: any[] = []) {
-    const duration = Date.now() - this.startTime;
+async endSession(userId?: string, rrwebEvents: any[] = []) {
+  const duration = Date.now() - this.startTime;
 
-    const currentPage = this.events.session.pages.find(p => p.page === this.pageUrl);
-    if (currentPage) currentPage.duration = duration;
+  // Actualiza duración de la página
+  const currentPage = this.events.session.pages.find(p => p.page === this.pageUrl);
+  if (currentPage) currentPage.duration = duration;
 
-    this.events.session.exitUrl = this.pageUrl;
+  this.events.session.exitUrl = this.pageUrl;
 
-    this.recordEvent('session_end', { duration, maxScroll: this.maxScroll });
+  // Registra evento de fin de sesión
+  this.recordEvent('session_end', { duration, maxScroll: this.maxScroll });
 
-    const payload = JSON.stringify({
-      userId,
-      userInfo: this.events.userInfo,
-      businessId: 1,
-      trackerEvents: this.events.session.systemEvents,
-      sessionRecord: rrwebEvents, // campo separado para RRWeb
-      durationMs: duration,
-    });
+  // Prepara payload
+  const payload = JSON.stringify({
+    user_id: userId,
+    user_info: this.events.userInfo,
+    business_id: '080fbac4-2aa8-4016-89ee-e339bd3c1c16',
+    tracker_events: this.events.session.systemEvents,
+    session_record: rrwebEvents,
+    duration_ms: duration,
+  });
 
+  console.log('📦 Payload:', payload);
+  console.log('🌐 Endpoint:', this.endpoint);
 
-    console.log("payload: ",payload)
-
-     await fetch(this.endpoint, {
+  // ✅ Intentar enviar con sendBeacon si es posible
+  if (navigator.sendBeacon) {
+    try {
+      const blob = new Blob([payload], { type: 'application/json' });
+      const sent = navigator.sendBeacon(this.endpoint, blob);
+      
+      console.log(sent ? '📡 Sesión enviada con sendBeacon' : '⚠️ Falló sendBeacon, intentar fetch');
+      
+      if (!sent) {
+        // FALLBACK 1
+        await fetch(this.endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: payload,
-          keepalive: true,
+          credentials: 'include' // <-- AÑADE ESTO
         }).catch(console.error);
-    
-      // if (navigator.sendBeacon) {
-      //   const blob = new Blob([payload], { type: 'application/json' });
-      //   alert('se envia por sendbeacon')
-      //   navigator.sendBeacon(this.endpoint, blob);
-      // } else {
-      //           alert('se envia por fetch')
-
-       
-      // }
-
+      }
+    } catch (err) {
+      console.error('❌ Error sendBeacon:', err);
+      // FALLBACK 2 (EN CASO DE ERROR)
+      await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        credentials: 'include' // <-- AÑADE ESTO TAMBIÉN
+      }).catch(console.error);
+    }
+  } else {
+    // FETCH NORMAL (SIN sendBeacon)
+    await fetch(this.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: payload,
+      credentials: 'include' // <-- AÑADE ESTO AQUÍ
+    }).catch(console.error);
   }
+
+
+}
 
   handleBeforeUnload(userId?: string, rrwebEvents: any[] = []) {
     window.addEventListener('beforeunload', () => {

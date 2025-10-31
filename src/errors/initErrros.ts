@@ -1,6 +1,5 @@
 interface ErrorTrackerConfig {
   projectId: string;         // ID único del cliente
-  endpoint: string;          // API donde se reportan los errores
   captureConsole?: boolean;  // Si también captura console.error/warn
   release?: string;          // Versión de la app del cliente
   environment?: 'prod' | 'staging' | 'dev';
@@ -12,7 +11,7 @@ export class initErrors {
   private originalConsoleWarn = console.warn;
 
   constructor(config: ErrorTrackerConfig) {
-    if (!config.projectId || !config.endpoint) {
+    if (!config.projectId) {
       throw new Error('initErrors: projectId y endpoint son requeridos');
     }
 
@@ -84,11 +83,11 @@ export class initErrors {
     type: string;
   }) {
     const payload = {
-      projectId: this.config.projectId,
+      business_id: this.config.projectId,
       release: this.config.release,
       environment: this.config.environment,
       url: window.location.href,
-      userAgent: navigator.userAgent,
+      user_agent: navigator.userAgent,
       timestamp: new Date().toISOString(),
       ...data,
     };
@@ -96,13 +95,12 @@ export class initErrors {
     console.log('enviando reporte al backend')
 
     try {
-      await fetch(this.config.endpoint, {
+      await fetch('https://trackit-suite-back.onrender.com/errors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
     } catch (err) {
-      // No logueamos errores de red para evitar loops
       this.originalConsoleError('[initErrors] Falló el envío del error:', err);
     }
   }

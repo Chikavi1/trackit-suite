@@ -1,13 +1,27 @@
 {
-  "name": "chikavi-tracking",
+  "name": "chikavi-trackit",
   "version": "0.0.1",
   "type": "module",
+  "description": "SDK para tracking de usuarios",
+  "author": "Luis Rojas",
+  "license": "MIT",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "browser": "dist/chikavi-tracking.umd.js",
+  "private": false,
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./nps": "./dist/nps/index.js",
+    "./session": "./dist/session/index.js",
+    "./chat": "./dist/chat/index.js",
+    "./errors": "./dist/errors/index.js",
+    "./surveys": "./dist/surveys/index.js",
+    "./announcement": "./dist/announcement/index.js"
+  },
   "scripts": {
     "build": "rollup -c",
+    "watch": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -16,6 +30,7 @@
     "tslib": "^2.8.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.9",
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-typescript": "^11.0.0",
     "eslint": "^9.37.0",
