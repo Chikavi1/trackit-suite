@@ -1,6 +1,8 @@
+import { getProjectId } from '../index';
 export interface AnnouncementConfig {
-  projectId: string;
-  message: string;
+  projectId?: string;
+  mode?: 'manual' | 'remote'; // 👈 Nuevo
+  message?: string;
   linkUrl?: string;
   type?: 'info' | 'warning' | 'success' | 'error';
   themeColor?: string;
@@ -11,30 +13,41 @@ export interface AnnouncementConfig {
 }
 
 export class Announcement {
-  private config: AnnouncementConfig;
+  private config: AnnouncementConfig & { projectId?: string };;
   private container!: HTMLDivElement;
   private isVisible = false;
 
-  constructor(config: AnnouncementConfig) {
-    if (!config.projectId) throw new Error('Announcement: projectId es requerido');
-    if (!config.message) throw new Error('Announcement: message es requerido');
-
-    console.log("el problema no esta en llamarlo");
-
-    this.config = {
+  constructor(config: AnnouncementConfig) { 
+     this.config = {
       type: 'info',
       themeColor: '#3b82f6',
       autoShow: true,
       duration: 0,
       dismissible: true,
       position: 'top',
-      ...config
+      mode: config.mode ?? (config.message ? 'manual' : 'remote'),
+      ...config,
+      projectId: getProjectId(config.projectId),
     };
+
+    this.init();
   }
 
   /** Inicializa el anuncio */
   async init() {
-    // Esperar a que el DOM esté listo
+    if (this.config.mode === 'remote') {
+      await this.fetchRemoteAnnouncement();
+    }
+
+    if (!this.config.message) {
+      console.warn("Announcement: no hay mensaje para mostrar");
+      return;
+    }
+
+    this.setupDOM();
+  }
+
+   private setupDOM() {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => this.createAnnouncement());
     } else {
@@ -45,6 +58,33 @@ export class Announcement {
       setTimeout(() => this.show(), 100);
     }
   }
+
+  /** 🔥 Nuevo: trae anuncio remoto */
+  private async fetchRemoteAnnouncement() {
+  try {
+    const headers: Record<string, string> = {};
+
+    if (this.config.projectId) {
+      headers["x-business-id"] = this.config.projectId;
+    }
+
+    const res = await fetch(`http://localhost:3000/announcements/current`, {
+      headers,
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    this.config.message = data.message;
+    this.config.linkUrl = data.linkUrl;
+    this.config.type = data.type;
+    this.config.themeColor = data.color;
+
+  } catch (err) {
+    console.error("Error cargando anuncio remoto:", err);
+  }
+}
 
   /** Crear el HTML del anuncio */
   private createAnnouncement() {

@@ -1,47 +1,250 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Demo PulseTrack</title>
+  <title>PulseTrack Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center p-8">
-  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg text-center">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">🚀 PulseTrack SDK Demo</h1>
-    <p class="text-gray-600 mb-8">Usa los botones para probar las funciones principales</p>
+<body class="bg-gray-50 min-h-screen font-sans">
+  <div class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 shadow-sm">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+              <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+            </svg>
+          </div>
+          <h1 class="text-xl font-bold text-gray-800">PulseTrack</h1>
+        </div>
+        <div class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+          Demo v1.0.0
+        </div>
+      </div>
+    </header>
 
-    <div class="flex flex-col gap-3">
-     <h2>RRWeb Recording</h2>
-      <button id="openNPS" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition">▶️ Abrir NPS</button>
-    
-      <h1 id="changetext" data-editor-id="changetext">texto a cambiar</h1>
+    <!-- Main Content -->
+    <main class="flex-1 py-8">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-10">
+          <h2 class="text-3xl font-bold text-gray-900 mb-3">PulseTrack SDK Demo</h2>
+          <p class="text-gray-600 max-w-2xl mx-auto">Prueba las funciones principales de PulseTrack con esta interfaz intuitiva y moderna.</p>
+        </div>
 
-      <h2>RRWeb Recording</h2>
-      <button id="btnStartRecording" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg transition">▶️ Iniciar grabación</button>
-      <button id="btnPauseRecording" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded-lg transition">⏸️ Pausar grabación</button>
-      <button id="btnStopRecording" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg transition">⏹️ Detener y enviar</button>
-      <button id="btnShowEvents" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition">📦 Ver eventos acumulados</button>
+        <div class="grid md:grid-cols-2 gap-6">
+          <!-- RRWeb Recording Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 bg-gray-50">
+              <h3 class="font-semibold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+                Grabación de Sesión
+              </h3>
+            </div>
+            <div class="p-4 space-y-3">
+              <button id="btnStartRecording" class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                </svg>
+                Iniciar grabación
+              </button>
+              <div class="flex space-x-2">
+                <button id="btnPauseRecording" class="flex-1 flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                  Pausar
+                </button>
+                <button id="btnStopRecording" class="flex-1 flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                  Detener
+                </button>
+              </div>
+              <button id="btnShowEvents" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                  <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
+                </svg>
+                Ver eventos
+              </button>
+            </div>
+          </div>
 
-      <h2>Errores</h2>
-      <button id="btnError" class="bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg transition">🔥 Lanzar error manual</button>
-      <button id="btnConsole" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 rounded-lg transition">⚠️ Lanzar console.error</button>
-      <button id="btnPromise" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition">🌀 Lanzar error en promesa</button>
+          <!-- NPS & Testing Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-4 border-b border-gray-100 bg-gray-50">
+              <h3 class="font-semibold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                Encuestas & Feedback
+              </h3>
+            </div>
+            <div class="p-4 space-y-3">
+              <button id="openNPS" class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                  <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+                </svg>
+                Abrir Encuesta NPS
+              </button>
+              <div id="banner" class="p-3 bg-gray-50 rounded-md border border-gray-200">
+                <p class="text-sm text-gray-600 text-center">Área de pruebas para variantes</p>
+              </div>
+              <button id="btnChange" class="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                </svg>
+                Probar cambio de contenido
+              </button>
+            </div>
+          </div>
 
-      <h2>Testing</h2>
-      <button id="btnChange">Cambiar contenido</button>
-    </div>
+          <!-- Error Simulation Card -->
+          <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden md:col-span-2">
+            <div class="p-4 border-b border-gray-100 bg-gray-50">
+              <h3 class="font-semibold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                Simulación de Errores
+              </h3>
+            </div>
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <button id="btnError" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                Error Manual
+              </button>
+              <button id="btnConsole" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-7.536 5.879a1 1 0 001.415 0 3 3 0 014.242 0 1 1 0 001.415-1.415 5 5 0 00-7.072 0 1 1 0 000 1.415z" clip-rule="evenodd" />
+                </svg>
+                Console Error
+              </button>
+              <button id="btnPromise" class="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414L9 9.414V13a1 1 0 102 0V9.414l1.293 1.293a1 1 0 001.414-1.414z" clip-rule="evenodd" />
+                </svg>
+                Error en Promesa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
 
-    
-
-    <p class="text-sm text-gray-400 mt-6">Abre la consola del navegador para ver los logs.</p>
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-4 mt-auto">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm text-gray-500">
+        <p>PulseTrack SDK Demo - Abre la consola del navegador para ver los logs detallados</p>
+      </div>
+    </footer>
   </div>
+
+
+
+
+<script src="dist/pulse-track.umd.min.js" ></script>
+<script>
+    PulseTrack.init({ projectId: '080fbac4-2aa8-4016-89ee-e339bd3c1c16' });
+    new PulseTrack.Announcement({mode:'remote'});
+    new PulseTrack.NPS({mode: "remote"}); 
+    new PulseTrack.chat({mode: "remote"});
+    
+    new PulseTrack.survey({mode:'remote'});
+    new PulseTrack.Testab();
+
+    // new PulseTrack.Session();
+   
+  /*  new PulseTrack.Testab().init().applyVariation('changetext', {
+      html: '<span style="color: red">¡Hola chavales!</span>'
+    }); */
+
+      // manual
+      
+      // new PulseTrack.NPS({
+      //    question: "¿Qué tan probable es que nos recomiendes?",
+      //    themeColor: "#f59e0b",
+      //    position: "bottom-center",
+      //    autoShow: true,
+      //    delay: 1000
+      //  });
+
+
+    /*  new PulseTrack.chat({
+            socketUrl: 'http://localhost:3000',
+            botName: 'Mi Asistente',
+            themeColor: '#000000ff ',
+            autoOpen: true
+      }).init();
+
+      new PulseTrack.survey({
+        question: '¿Qué tan probable es que nos recomiendes?',
+        options: ['1','2','3','4','5'],
+        themeColor: '#f59e0b',
+        position: 'right',
+        autoShow: false,
+        buttonText: 'Feedback'
+      }).init();
+
+      
+  */
+
+    
+ 
+   
+
+ 
+</script>
+
+ <!-- new PulseTrack.Session(); -->
+
+  <!-- <script src="dist/pulse-track.umd.min.js"></script>
+  <script>
+    const ann = new PulseTrack.Announcement({
+      projectId: '711cd796-c447-4c7c-ab46-f3010bc43231',
+      message: 'Este es un anuncio',
+    });
+    ann.init();
+
+
+    new PulseTrack.chat({
+      projectId: '029404a2-40d8-4236-9373-425c9b6938c5',
+       socketUrl: 'http://localhost:3000',
+        botName: 'Mi Asistente',
+        themeColor: '#000000ff ',
+        autoOpen: true
+    }).init();
+
+  </script> -->
+
+ 
+
+
+
+  <!-- const myNps = new PulseTrack.NPS({
+      projectId: "711cd796-c447-4c7c-ab46-f3010bc43231",
+      question: "¿Qué tan probable es que nos recomiendes?",
+      themeColor: "##17202F",
+      position: "bottom-center",
+      autoShow: true,
+      delay: 1000
+    });
+    myNps.open(); -->
 
   <!-- Importa el bundle UMD -->
   
-<script type="module">
+<!-- <script type="module">
   import { NPS  } from './dist/nps.js';
 
   const myNps = new NPS({
@@ -64,7 +267,7 @@
   manager.applyVariation('changetext', {
       html: '<span style="color: red">¡Hola mundo!</span>'
     });
-</script>
+</script> -->
 
 <!-- <script type="module">
   import { chat as initChatbot } from './dist/chat.js';
@@ -87,7 +290,7 @@
 
 
 
-  <script type="module">
+  <!-- <script type="module">
 
     import { survey as initSurvey } from './dist/surveys.js';
 
@@ -104,10 +307,10 @@
 
     survey.init();
 
-  </script>
+  </script> -->
 
 
-  <script type="module">
+  <!-- <script type="module">
     import { Announcement } from './dist/announcement.js';
 
     const ann = new Announcement({
@@ -124,7 +327,7 @@
 
 
     ann.init();
-  </script>
+  </script> -->
 
 <!-- <script type="module">
     import { Session } from './dist/session.js';

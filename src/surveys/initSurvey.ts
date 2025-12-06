@@ -1,13 +1,17 @@
+import { getProjectId } from '../index';
+
 export interface SurveyConfig {
-  projectId: string;                 // ID único del proyecto/cliente
-  question: string;                  // Pregunta principal
-  options?: string[];                // Opciones de respuesta
-  themeColor?: string;               // Color principal
-  position?: 'modal' | 'bottom' | 'right'; // Tipo de UI
-  autoShow?: boolean;                // Mostrar automáticamente
-  delay?: number;                    // Delay antes de mostrar (ms)
-  buttonText?: string;               // Texto del botón flotante (para right)
-  poweredBy?: string;                // Footer opcional
+  projectId?: string;
+  question: string;
+  options?: string[];
+  themeColor?: string;
+  position?: 'modal' | 'bottom' | 'right';
+  autoShow?: boolean;
+  delay?: number;
+  buttonText?: string;
+  poweredBy?: string;
+  mode?: 'manual' | 'remote';
+
 }
 
 export class initSurvey {
@@ -16,11 +20,9 @@ export class initSurvey {
   private isOpen = false;
 
   constructor(config: SurveyConfig) {
-    if (!config.projectId) throw new Error('initSurvey: projectId es requerido');
-    if (!config.question) throw new Error('initSurvey: question es requerido');
-
+ 
     this.config = {
-      options: ['1','2','3','4','5'],
+      options: ['1', '2', '3', '4', '5'],
       themeColor: '#f59e0b',
       position: 'modal',
       autoShow: true,
@@ -29,128 +31,233 @@ export class initSurvey {
       poweredBy: 'PulseTrack',
       ...config
     };
+
+    this.init();
   }
 
-  /** Inicializa la encuesta */
   async init() {
-    await this.createSurvey();
+    const projectId = getProjectId(this.config.projectId);
+    if (!projectId) throw new Error('initSurvey: projectId es requerido.');
+
+    this.config.projectId = projectId;
+      if (this.config.mode === 'remote') {
+      await this.loadRemoteConfig();
+    }
+    this.render();
+    this.bindCommonEvents();
+
     if (this.config.autoShow) {
-      setTimeout(() => this.toggleSurvey(true), this.config.delay);
+      setTimeout(() => this.open(), this.config.delay);
     }
   }
 
-  /** Crea el HTML de la encuesta según posición */
-  private createSurvey() {
+  private async loadRemoteConfig() {
+  try {
+    const res = await fetch('http://localhost:3000/forms/current', {
+      headers: { 'x-business-id': this.config.projectId! }
+    });
+
+    if (!res.ok) throw new Error('Error cargando chat remoto');
+
+    const remote = await res.json();
+
+    console.log('remote',remote)
+
+     this.config = {
+      ...this.config,
+      ...remote,
+    };
+
+    console.log("✅ Chat config remoto aplicado");
+  } catch (err) {
+    console.warn("⚠️ Chat remoto no disponible. Usando config manual", err);
+  }
+}
+
+  /** Render principal */
+  private render() {
     this.container = document.createElement('div');
     this.container.id = 'survey-container';
 
-    switch(this.config.position) {
-      case 'modal':
-        this.container.innerHTML = this.getModalHtml();
-        break;
-      case 'bottom':
-        this.container.innerHTML = this.getBottomHtml();
-        break;
-      case 'right':
-        this.container.innerHTML = this.getRightButtonHtml();
-        break;
+    if (this.config.position === 'right') {
+      this.container.innerHTML = this.getRightTemplate();
+    } else if (this.config.position === 'bottom') {
+      this.container.innerHTML = this.getBottomHtml();
+    } else {
+      this.container.innerHTML = this.getModalHtml();
     }
 
     document.body.appendChild(this.container);
-
-    if (this.config.position !== 'right') {
-      this.bindSurveyEvents();
-    } else {
-      const btn = this.container.querySelector('#survey-toggle-btn') as HTMLElement;
-      btn.addEventListener('click', () => this.toggleSurvey());
-    }
   }
 
-  /** Toggle de mostrar/ocultar encuesta */
-  private toggleSurvey(force?: boolean) {
-    this.isOpen = force ?? !this.isOpen;
-    const surveyEl = this.container.querySelector('.survey-box') as HTMLElement;
-    if (surveyEl) surveyEl.style.display = this.isOpen ? 'flex' : 'none';
-  }
+  /** Eventos para opciones + cerrar */
+  private bindCommonEvents() {
+    document.body.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target?.closest('.survey-option')) {
+        const value = target.dataset.value;
+        this.send(value!);
+        this.close();
+      }
 
-  /** Bind de botones de opción */
-  private bindSurveyEvents() {
-    const options = this.container.querySelectorAll('.survey-option');
-    options.forEach((opt) => {
-      opt.addEventListener('click', () => {
-        const value = (opt as HTMLElement).dataset.value;
-        console.log('Survey answer:', value);
-        this.toggleSurvey(false);
-      });
+      if (target.classList.contains('survey-close') || target.id === 'survey-modal-overlay') {
+        this.close();
+      }
     });
 
-    // Cerrar modal
-    const closeBtn = this.container.querySelector('.survey-close') as HTMLElement;
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => this.toggleSurvey(false));
-    }
+    const toggleBtn = document.getElementById('survey-toggle-btn');
+    if (toggleBtn) toggleBtn.addEventListener('click', () => this.toggle());
   }
 
-  /** HTML para modal centrado */
+  /** --- Métodos UI --- */
+  private toggle() {
+    this.isOpen ? this.close() : this.open();
+  }
+
+  private open() {
+    this.isOpen = true;
+    const modal = document.getElementById('survey-modal-overlay');
+    const box = document.getElementById('survey-box');
+    
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
+    
+    setTimeout(() => {
+      box?.classList.remove('opacity-0', 'scale-90');
+      box?.classList.add('opacity-100', 'scale-100');
+    }, 10);
+  }
+
+  private close() {
+    this.isOpen = false;
+    const box = document.getElementById('survey-box');
+    const modal = document.getElementById('survey-modal-overlay');
+
+    box?.classList.remove('opacity-100', 'scale-100');
+    box?.classList.add('opacity-0', 'scale-90');
+    
+    setTimeout(() => {
+      modal?.classList.remove('flex');
+      modal?.classList.add('hidden');
+    }, 200);
+  }
+
+  /** --- LAYOUTS --- */
   private getModalHtml() {
-    const optionsHtml = this.config.options!.map(opt =>
-      `<button class="survey-option bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded" data-value="${opt}">${opt}</button>`
-    ).join('');
     return `
-      <div class="survey-box fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-[9999]">
-        <div class="bg-white rounded-xl shadow-xl p-6 flex flex-col gap-4 w-80">
-          <div class="flex justify-between items-center">
-            <h3 class="font-semibold text-lg">${this.config.question}</h3>
-            <button class="survey-close text-gray-500 hover:text-gray-800">&times;</button>
-          </div>
-          <div class="flex flex-wrap gap-2">${optionsHtml}</div>
-          <p class="text-xs text-gray-400 mt-2">Powered by ${this.config.poweredBy}</p>
-        </div>
-      </div>
-    `;
-  }
-
-  /** HTML para barra inferior */
-  private getBottomHtml() {
-    const optionsHtml = this.config.options!.map(opt =>
-      `<button class="survey-option bg-white border border-gray-300 hover:bg-gray-100 text-gray-800 px-3 py-1 rounded" data-value="${opt}">${opt}</button>`
-    ).join('');
-    return `
-      <div class="survey-box fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow-xl p-4 flex flex-col gap-2 hidden z-[9999]">
-        <div class="font-semibold text-gray-800">${this.config.question}</div>
-        <div class="flex gap-2 flex-wrap">${optionsHtml}</div>
-        <p class="text-xs text-gray-400 mt-1">Powered by ${this.config.poweredBy}</p>
-      </div>
-    `;
-  }
-
-  /** HTML para botón lateral derecho */
-  /** HTML templates separados */
-    private getRightButtonHtml() {
-      const optionsHtml = this.config.options!.map(opt =>
-        `<button class="survey-option bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded" data-value="${opt}">${opt}</button>`
-      ).join('');
-    
-      return `
-        <div class="fixed -right-8 top-1/2 transform -translate-y-1/2 z-[9999] flex flex-col items-end">
-          <!-- Botón girado -->
-          <button id="survey-toggle-btn" 
-            class="bg-[${this.config.themeColor}] text-white px-4 py-2 rounded shadow-lg hover:bg-opacity-90 transition transform -rotate-90 origin-center">
-            ${this.config.buttonText}
+      <div id="survey-modal-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-[9998] hidden items-center justify-center p-4">
+        <div id="survey-box" class="relative bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform transition-all duration-200 opacity-0 scale-90">
+          <button class="survey-close absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-light leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            &times;
           </button>
-    
-          <!-- Encuesta oculta -->
-          <div class="survey-box hidden flex-col mt-2 bg-white rounded-xl shadow-xl p-4 w-64 ml-62">
-            <div class="font-semibold mb-2">${this.config.question}</div>
-            <div class="flex gap-2 flex-wrap">
-              ${optionsHtml}
-            </div>
-            <p class="text-xs text-gray-400 mt-2">Powered by ${this.config.poweredBy}</p>
+          
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 pr-6">${this.config.question}</h3>
+          
+          <div class="flex gap-2 justify-center flex-wrap mb-4">
+            ${this.getOptionsHtml()}
           </div>
+          
+          <p class="text-xs text-gray-400 text-center mt-4">Powered by ${this.config.poweredBy}</p>
         </div>
-      `;
-    }
-    
+      </div>
+      ${this.getStyles()}
+    `;
+  }
 
-  
+  private getBottomHtml() {
+    return `
+      <div id="survey-modal-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-[9998] hidden flex items-end justify-center">
+        <div id="survey-box" class="relative bg-white rounded-t-2xl w-full max-w-md p-6 shadow-2xl transform transition-all duration-200 opacity-0 translate-y-full" style="transform: translateY(100%)">
+          <button class="survey-close absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-light leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            &times;
+          </button>
+          
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 pr-6">${this.config.question}</h3>
+          
+          <div class="flex gap-2 justify-center flex-wrap mb-4">
+            ${this.getOptionsHtml()}
+          </div>
+          
+          <p class="text-xs text-gray-400 text-center mt-4">Powered by ${this.config.poweredBy}</p>
+        </div>
+      </div>
+      ${this.getStyles()}
+    `;
+  }
+
+  private getRightTemplate() {
+    return `
+      <button id="survey-toggle-btn" class="fixed top-1/2 right-0 -translate-y-1/2 -mt-10 translate-x-[45px] rotate-[-90deg] px-6 py-2.5 rounded-lg text-white font-semibold shadow-lg hover:opacity-90 transition-opacity z-[9999] origin-center" style="background:${this.config.themeColor}">
+        ${this.config.buttonText}
+      </button>
+
+      <div id="survey-modal-overlay" class="fixed inset-0 bg-black bg-opacity-40 z-[9998] hidden items-center justify-center p-4">
+        <div id="survey-box" class="relative bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform transition-all duration-200 opacity-0 scale-90">
+          <button class="survey-close absolute top-3 right-3 text-gray-400 hover:text-gray-600 text-2xl font-light leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            &times;
+          </button>
+          
+          <h3 class="text-lg font-semibold text-gray-800 mb-4 pr-6">${this.config.question}</h3>
+          
+          <div class="flex gap-2 justify-center flex-wrap mb-4">
+            ${this.getOptionsHtml()}
+          </div>
+          
+          <p class="text-xs text-gray-400 text-center mt-4">Powered by ${this.config.poweredBy}</p>
+        </div>
+      </div>
+      ${this.getStyles()}
+    `;
+  }
+
+  private getOptionsHtml() {
+    return this.config.options!.map(opt =>
+      `<button class="survey-option px-5 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium text-gray-700 transition-colors cursor-pointer border border-gray-200 hover:border-gray-300" data-value="${opt}">${opt}</button>`
+    ).join('');
+  }
+
+  /** --- ESTILOS ADICIONALES --- */
+  private getStyles() {
+    return `
+      <style>
+        /* Estilos adicionales solo para animaciones específicas del bottom */
+        #survey-modal-overlay.show-bottom #survey-box {
+          transform: translateY(0) !important;
+          opacity: 1 !important;
+        }
+        
+        /* Asegurar que el overlay esté por encima de todo */
+        #survey-modal-overlay {
+          pointer-events: auto;
+        }
+        
+        /* Prevenir scroll cuando el modal está abierto */
+        body.survey-open {
+          overflow: hidden;
+        }
+      </style>
+    `;
+  }
+
+  /** --- ENVÍO DE DATOS --- */
+  private async send(value: string) {
+    try {
+      await fetch('http://localhost:3000/nps/public', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-business-id': this.config.projectId!
+        },
+        body: JSON.stringify({
+          score: value,
+          url: window.location.href,
+          timestamp: new Date().toISOString(),
+          user_agent: navigator.userAgent,
+        })
+      });
+      console.log('✅ Survey enviado:', value);
+    } catch (err) {
+      console.warn('❌ Error enviando encuesta', err);
+    }
+  }
 }

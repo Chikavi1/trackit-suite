@@ -1,10 +1,12 @@
+import { getProjectId } from '../index';
 interface NpsConfig {
-  projectId: string;
+  projectId?: string;
   question?: string;
   themeColor?: string;
   position?: 'bottom-right' | 'bottom-left' | 'bottom-center' | 'top-right' | 'top-left';
   autoShow?: boolean;
   delay?: number;
+    mode?: 'manual' | 'remote';
 }
 
 export class initNps {
@@ -14,22 +16,46 @@ export class initNps {
 
   constructor(config: NpsConfig) {
     this.config = {
-      question: config.question || '¿Qué tan probable es que recomiendes este servicio?',
-      themeColor: config.themeColor || '#2563eb',
-      position: config.position || 'bottom-right',
-      autoShow: config.autoShow ?? false,
-      delay: config.delay ?? 2000,
-      ...config
+      question: "¿Qué tan probable es que recomiendes este servicio?",
+      themeColor: "#2563eb",
+      position: "bottom-right",
+      autoShow: false,
+      delay: 2000,
+      mode: "manual",
+      ...config,
     };
-
-    if (!this.config.projectId) {
-      throw new Error('initNps: <projectId son requeridos');
-    }
-
-    if (this.config.autoShow) {
+  
+    this.config.projectId = getProjectId(this.config.projectId);
+  
+    if (this.config.mode === "remote") {
+      this.loadRemoteConfig();
+    } else if (this.config.autoShow) {
       setTimeout(() => this.renderWidget(), this.config.delay);
     }
   }
+
+
+  private async loadRemoteConfig() {
+    try {
+      const res = await fetch("http://localhost:3000/nps/current", {
+        headers: { "x-business-id": this.config.projectId! }
+      });
+  
+      const remoteConfig = await res.json();
+      console.log('remote',remoteConfig)
+      this.config = { ...this.config, ...remoteConfig };
+        console.log('config',this.config)
+
+   
+      if (this.config.autoShow) {
+        setTimeout(() => this.renderWidget(), this.config.delay);
+      }
+  
+    } catch (err) {
+      console.warn("NPS config remota no disponible, usando defaults", err);
+    }
+  }
+
 
   private renderWidget() {
     if (document.getElementById('nps-widget')) return;
@@ -231,12 +257,15 @@ export class initNps {
     if (this.hasVoted) return;
     this.hasVoted = true;
 
+    // https://trackit-suite-back.onrender.com
     try {
-      await fetch('https://trackit-suite-back.onrender.com/nps', {
+      await fetch('http://localhost:3000/nps/public', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-business-id': this.config.projectId!, // <- aquí
+        },
         body: JSON.stringify({
-          business_id: this.config.projectId,
           score,
           feedback,
           name,

@@ -1,6 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs'; // <-- 1. Importa commonjs
+import commonjs from '@rollup/plugin-commonjs';
+import terser from '@rollup/plugin-terser'; 
 
 export default [
   // ESM + CJS para npm
@@ -14,7 +15,6 @@ export default [
       chat: 'src/chat/index.ts',
       surveys: 'src/surveys/index.ts',
       announcement: 'src/announcement/index.ts'
-
     },
     output: [
       { dir: 'dist', format: 'esm', entryFileNames: '[name].js' },
@@ -22,25 +22,36 @@ export default [
     ],
     plugins: [
       resolve(),
-      commonjs(), // <-- 2. Añade commonjs (antes de typescript)
+      commonjs(),
       typescript({ tsconfig: './tsconfig.json' })
     ],
-    // external: ['rrweb'] // <-- 3. ¡ELIMINA O COMENTA ESTA LÍNEA!
   },
 
-  // UMD para navegador (solo entry principal)
+  // UMD para navegador
   {
     input: 'src/index.ts',
-    output: {
-      file: 'dist/chikavi-tracking.umd.js',
-      format: 'umd',
-      name: 'TrackItSuite',
-      // globals: { rrweb: 'rrweb' } // <-- 4. ¡ELIMINA ESTA LÍNEA!
-    },
+    output: [
+      {
+        file: 'dist/pulse-track.umd.js',
+        format: 'umd',
+        name: 'PulseTrack'
+      },
+      {
+        file: 'dist/pulse-track.umd.min.js', // archivo minificado
+        format: 'umd',
+        name: 'PulseTrack',
+        plugins: [terser({
+        format: {
+          comments: false 
+        }
+      })]  
+      }
+    ],
     plugins: [
       resolve(),
-      commonjs(), // <-- 5. Añade commonjs aquí también
+      commonjs(),
       typescript({ tsconfig: './tsconfig.json' })
     ]
   }
+
 ];

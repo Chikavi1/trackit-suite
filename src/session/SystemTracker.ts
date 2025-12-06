@@ -18,6 +18,7 @@ export class SystemTracker {
   }
 
   private initPage() {
+    console.log('inicializador de la session')
     let currentPage = this.events.session.pages.find(p => p.page === this.pageUrl);
     if (!currentPage) {
       currentPage = { page: this.pageUrl, duration: 0, totalClicks: 0, percentageScroll: 0, events: [] };
