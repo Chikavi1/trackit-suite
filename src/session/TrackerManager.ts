@@ -48,7 +48,9 @@ export class TrackerManager {
     // ===============================================
     this.rrwebTracker = new RRWebTracker({
       events: this.events,
-      onEvent: (event) => console.log('Evento grabado RRWeb:', event),
+      onEvent: (event) => {
+        // console.log('Evento grabado RRWeb:', event)
+      },
     });
     this.startRecording();
 

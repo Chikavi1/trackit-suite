@@ -1,7 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import terser from '@rollup/plugin-terser'; 
+import terser from '@rollup/plugin-terser';
 
 export default [
   // ESM + CJS para npm
@@ -21,10 +21,10 @@ export default [
       { dir: 'dist', format: 'cjs', entryFileNames: '[name].cjs.js' }
     ],
     plugins: [
-      resolve(),
+      resolve({ browser: true, preferBuiltins: false }),
       commonjs(),
       typescript({ tsconfig: './tsconfig.json' })
-    ],
+    ]
   },
 
   // UMD para navegador
@@ -37,21 +37,24 @@ export default [
         name: 'PulseTrack'
       },
       {
-        file: 'dist/pulse-track.umd.min.js', // archivo minificado
+        file: 'dist/pulse-track.umd.min.js',
         format: 'umd',
         name: 'PulseTrack',
-        plugins: [terser({
-        format: {
-          comments: false 
-        }
-      })]  
+        plugins: [
+          terser({
+            format: { comments: false }
+          })
+        ]
       }
     ],
     plugins: [
-      resolve(),
+      resolve({ browser: true, preferBuiltins: false }),
       commonjs(),
       typescript({ tsconfig: './tsconfig.json' })
-    ]
+    ],
+    onwarn(warning, warn) {
+      if (warning.code === 'EVAL') return;
+      warn(warning);
+    }
   }
-
 ];
