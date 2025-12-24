@@ -18,10 +18,23 @@ import { chat } from './chat';
 import { survey } from './surveys';
 import { Announcement } from './announcement';
 import { Testab } from './variants'
+import { SystemTracker } from './session/SystemTracker';
+import { ClientIdentity } from './ClientIdentity';
+import { Feedback } from './feedback';
 
-export { NPS, Session, chat, survey, Announcement, Testab };
+export const PulseTrack = {
+  init,
+  ClientIdentity,
+  Session,
+  NPS,
+  survey,
+  chat,
+  Announcement,
+  Testab,
+  SystemTracker,
+  Feedback
+};
 
-// expose in window
 if (typeof window !== 'undefined') {
-  (window as any).PulseTrack = { NPS, Session, chat, survey, Announcement,Testab, init };
+  (window as any).PulseTrack = PulseTrack;
 }

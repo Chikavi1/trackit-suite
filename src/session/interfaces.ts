@@ -27,6 +27,7 @@ export interface PageEvent {
   data: EventData;
   timestamp: number;
   relativeTime: number;
+  page: string;
 }
 
 export interface Page {
@@ -44,22 +45,33 @@ export interface Session {
   pages: Page[];
   rrwebEvents: RRWebEvent[];
   systemEvents: SystemEvent[];
+  entry_page?: string;
+  exit_page?: string;
+  total_clicks?: number;
+  total_inputs?: number;
+  total_pages_visited?: number;
 }
 
 export interface UserInfo {
   browser: string;
   platform: string;
   language: string;
+  fingerprint: string | null;
+  isBot: boolean | null;
   deviceType: 'mobile' | 'desktop';
   screen: { width: number; height: number };
   timezone: string;
 }
 
 export interface Events {
-  leadId: string;
+  leadId?: string;
   userInfo: UserInfo;
   session: Session;
+  errors: TrackedError[];
   createdAt: string;
+  total_clicks?: number;
+  total_inputs?: number;
+  total_pages_visited?: number;
 }
 
 
@@ -69,4 +81,24 @@ export interface RecordedEvent {
   data: EventData;
   timestamp: number;
   relativeTime: number;
+  page: string;
+}
+
+export interface SystemTrackerOptions {
+  businessId: string;
+  userId?: string;
+}
+
+export interface TrackedError {
+  message: string;
+  source?: string;
+  lineno?: number;
+  colno?: number;
+  stack?: string;
+  timestamp: number;
+  page: string;
+   count?: number;
+   hash: string;
+   lastOccurred: number;
+   
 }

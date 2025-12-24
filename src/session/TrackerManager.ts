@@ -3,7 +3,7 @@ import { RRWebTracker } from './RRWebTracker';
 import { SystemTracker } from './SystemTracker';
 
 export class TrackerManager {
-  public events!: Events;
+  public events!: any;
   private systemTracker: SystemTracker | null = null;
   private rrwebTracker: RRWebTracker | null = null;
   private userId: string;
